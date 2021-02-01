@@ -30,6 +30,8 @@ const GlobalStyle = createGlobalStyle`
 
   .HomePage {
     margin: 30px;
+    display: flex;
+    flex-direction: column;
   }
 
   canvas {
