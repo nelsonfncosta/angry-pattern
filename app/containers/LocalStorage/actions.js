@@ -1,4 +1,4 @@
-import { INIT, LAST_PATTERN_SET } from './constants';
+import { INIT, LAST_PATTERN_SET, SAVE_LAST_PATTERN } from './constants';
 
 export function init(data) {
   return {
@@ -11,5 +11,11 @@ export function lastPatternSet(data) {
   return {
     type: LAST_PATTERN_SET,
     payload: { data },
+  };
+}
+
+export function saveLastPattern() {
+  return {
+    type: SAVE_LAST_PATTERN,
   };
 }

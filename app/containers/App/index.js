@@ -10,15 +10,17 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Switch, Route } from 'react-router-dom';
-
-import HomePage from 'containers/HomePage/Loadable';
-import NotFoundPage from 'containers/NotFoundPage/Loadable';
-
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import GlobalStyle from '../../global-styles';
-import { init } from '../LocalStorage/actions';
-import { MAIN_KEY } from '../LocalStorage/constants';
+
+import rootSaga from 'saga';
+import GlobalStyle from 'global-styles';
+import { DAEMON } from 'utils/constants';
+import injectSaga from 'utils/injectSaga';
+import HomePage from 'containers/HomePage/Loadable';
+import NotFoundPage from 'containers/NotFoundPage/Loadable';
+import { init } from 'containers/LocalStorage/actions';
+import { MAIN_KEY } from 'containers/LocalStorage/constants';
 
 export function App(props) {
   useEffect(() => {
@@ -49,7 +51,15 @@ export const mapDispatchToProps = dispatch =>
     dispatch,
   );
 
-export default connect(
+const withSaga = injectSaga({
+  key: 'app-saga-key',
+  saga: rootSaga,
+  mode: DAEMON,
+});
+
+const ConnectedApp = connect(
   null,
   mapDispatchToProps,
 )(App);
+
+export default withSaga(ConnectedApp);
