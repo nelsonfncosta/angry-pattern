@@ -7,6 +7,8 @@ const { HashedModuleIdsPlugin } = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
+const PUBLIC_PATH = process.env.PUBLIC_PATH || '/';
+
 module.exports = require('./webpack.base.babel')({
   mode: 'production',
 
@@ -90,6 +92,10 @@ module.exports = require('./webpack.base.babel')({
       relativePaths: false,
       publicPath: '/',
       appShell: '/',
+
+      ServiceWorker: {
+        publicPath: `${PUBLIC_PATH}sw.js`,
+      },
 
       // No need to cache .htaccess. See http://mxs.is/googmp,
       // this is applied before any match in `caches` section
