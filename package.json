@@ -42,7 +42,10 @@
     "test": "cross-env NODE_ENV=test jest --coverage",
     "test:watch": "cross-env NODE_ENV=test jest --watchAll",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "prettify": "prettier --write"
+    "prettify": "prettier --write",
+    "dist:build": "cross-env PUBLIC_PATH='./' BUILD_FOLDER_PATH='dist' npm run build",
+    "deploy": "cd dist && git add --all && git commit -m 'Deploy on gh-pages updated' && git push origin gh-page",
+    "dist:deploy": "npm run dist:build && npm run deploy"
   },
   "browserslist": [
     "last 2 versions",
