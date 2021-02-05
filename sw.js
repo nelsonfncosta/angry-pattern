@@ -25,7 +25,7 @@ var __wpo = {
   },
   "externals": [],
   "hashesMap": {
-    "5e53ef208f3fa79a48f8374488f473c76e1233de": "/favicon.ico",
+    "59e0b5b521950aa876e4ce16004dc16821e5569f": "/favicon.ico",
     "1e7fd4463861aeb6a378cf7fb56273f34f47d204": "/npm.intl.d3b309cd1f41ae274e7d.chunk.js",
     "8265c5599aa57e533afe504af738101ab927d4f6": "/npm.lodash.e8a246ce3577bdbef31b.chunk.js",
     "24f7a78f403b3c15e5916580404e5285f0b4f8f0": "/main.501932cab5899ffcaa09.chunk.js",
@@ -41,11 +41,11 @@ var __wpo = {
     "f2f009fae11a780b4803f198c4ddb89920cf44d7": "/12.f7c804a99afdd0e89ee6.chunk.js",
     "657e8ec9182321fd49832e468bb89dc6e4330f2b": "/13.15d3efb94fa346deee8d.chunk.js",
     "00565662a44ddff6465eac40c911ea1b69a2a4ca": "/14.855ff712e7dcfa2bb16f.chunk.js",
-    "8139aa604263dfb809d3bb4f4effa8ec581387ab": "/"
+    "4336f793750d209cf943a0ac6ddff385cb714f22": "/"
   },
   "strategy": "changed",
   "responseStrategy": "cache-first",
-  "version": "2/5/2021, 11:01:00 PM",
+  "version": "2/5/2021, 11:09:20 PM",
   "name": "webpack-offline",
   "pluginVersion": "5.0.6",
   "relativePaths": false
