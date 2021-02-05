@@ -43,6 +43,10 @@ const GlobalStyle = createGlobalStyle`
     cursor: crosshair;
   }
 
+  .saveButton {
+    width: 400px;
+  }  
+
 `;
 
 export default GlobalStyle;

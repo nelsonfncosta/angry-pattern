@@ -1,9 +1,15 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { difference } from 'lodash';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 import PatternIMG from '../../images/pattern.jpg';
 import { pointInsideCircle } from '../../utils/math';
 import { lastPatternSet } from '../LocalStorage/actions';
+import {
+  getLastPattern,
+  patternAlreadyExists,
+  patternExists,
+} from '../LocalStorage/reducer';
 
 /*
 P1  P2  P3
@@ -29,23 +35,29 @@ const LINE_WIDTH = 3;
 
 const isMouseAt = (mx, my, point) => {
   const { x, y } = PATTERN_POINTS[`P${point}`];
-  // console.log(`checking P${point} x:${x}, y:${y}`);
+
   return pointInsideCircle(x, y, mx, my, RADIUS);
 };
 
 function PatternCanvas(props) {
   const canvas = useRef();
-  let ctx = null;
-  let canvasX;
-  let canvasY;
-  let lastMouseX;
-  let lastMouseY;
-  let mouseDown = false;
-
-  let currentPath = [];
-
   const background = new Image(PatternIMG);
   background.src = PatternIMG;
+
+  const [mousePos, setMousePos] = useState({
+    lastMouseX: undefined,
+    lastMouseY: undefined,
+    mouseDown: false,
+  });
+
+  const [canvasInfo, setCanvasInfo] = useState({
+    x: undefined,
+    y: undefined,
+  });
+
+  const [currentPath, setCurrentPath] = useState([]);
+
+  const [context, setContext] = useState(null);
 
   // initialize the canvas context
   useEffect(() => {
@@ -56,25 +68,22 @@ function PatternCanvas(props) {
 
     console.log(`Canvas size w: ${canvasEle.width} h: ${canvasEle.height}`);
 
-    canvasX = canvasEle.offsetLeft;
-    canvasY = canvasEle.offsetTop;
-
-    console.log(`Canvas offset left:${canvasX} top:${canvasY}`);
+    setCanvasInfo({ x: canvasEle.offsetLeft, y: canvasEle.offsetTop });
 
     // get context of the canvas
-    ctx = canvasEle.getContext('2d');
+    setContext(canvasEle.getContext('2d'));
   }, []);
 
   const drawLine = (info, style = {}) => {
     const { x, y, x1, y1 } = info;
     const { color = 'black', width = LINE_WIDTH } = style;
 
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x1, y1);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.stroke();
+    context.beginPath();
+    context.moveTo(x, y);
+    context.lineTo(x1, y1);
+    context.strokeStyle = color;
+    context.lineWidth = width;
+    context.stroke();
   };
 
   useEffect(() => {
@@ -85,48 +94,57 @@ function PatternCanvas(props) {
   const drawPatternDots = () => {
     const canvasEle = canvas.current;
 
-    ctx.drawImage(background, 0, 0, canvasEle.width, canvasEle.height);
+    canvasEle
+      .getContext('2d')
+      .drawImage(background, 0, 0, canvasEle.width, canvasEle.height);
   };
 
   const onCanvasMouseDown = e => {
-    lastMouseX = parseInt(e.clientX - canvasX, 10);
-    lastMouseY = parseInt(e.clientY - canvasY, 10);
-    mouseDown = true;
+    const lastMouseX = parseInt(e.clientX - canvasInfo.x, 10);
+    const lastMouseY = parseInt(e.clientY - canvasInfo.y, 10);
+    const mouseDown = true;
+
+    setMousePos({ lastMouseX, lastMouseY, mouseDown });
 
     console.log('onCanvasMouseDown', lastMouseX, lastMouseY);
+
     pointCheck(lastMouseX, lastMouseY);
   };
 
   const onCanvasMouseUp = () => {
-    mouseDown = false;
+    setMousePos(state => ({ ...state, mouseDown: false }));
 
     console.log(currentPath);
     props.setLastPattern(currentPath);
+    drawPath(currentPath, getLineColor(currentPath));
     clearCurrentPath();
   };
 
-  const clearCurrentPath = () => {
-    currentPath = [];
-  };
+  const clearCurrentPath = () => setCurrentPath([]);
 
   const isPatternFull = () => currentPath.length === 9;
 
-  const drawCurrentPath = () => {
-    for (let index = 0; index < currentPath.length - 1; index += 1) {
-      const point = getPoint(currentPath[index]);
-      const nextPoint = getPoint(currentPath[index + 1]);
+  const getLineColor = p => (props.patternExists(p) ? 'red' : 'blue');
 
-      drawLine({ x: point.x, y: point.y, x1: nextPoint.x, y1: nextPoint.y });
+  const drawPath = (path = [], color = 'black') => {
+    console.log('drawing', path);
+    for (let index = 0; index < path.length - 1; index += 1) {
+      const point = getPoint(path[index]);
+      const nextPoint = getPoint(path[index + 1]);
+
+      drawLine(
+        { x: point.x, y: point.y, x1: nextPoint.x, y1: nextPoint.y },
+        { color },
+      );
     }
   };
-
   const onCanvasMouseMove = e => {
     const lastP = lastPoint();
 
-    if (!mouseDown || !lastP || isPatternFull()) return;
+    if (!mousePos.mouseDown || !lastP || isPatternFull()) return;
 
-    const xx = parseInt(e.clientX - canvasX, 10);
-    const yy = parseInt(e.clientY - canvasY, 10);
+    const xx = parseInt(e.clientX - canvasInfo.x, 10);
+    const yy = parseInt(e.clientY - canvasInfo.y, 10);
 
     pointCheck(xx, yy);
 
@@ -134,19 +152,19 @@ function PatternCanvas(props) {
     // ctx.clearRect(0, 0, canvasEle.width, canvasEle.height); // clear canvas
     drawPatternDots();
 
-    drawCurrentPath();
+    drawPath(currentPath);
 
-    ctx.beginPath();
+    context.beginPath();
 
-    ctx.moveTo(lastP.x, lastP.y);
-    // ctx.moveTo(lastMouseX, lastMouseY);
+    context.moveTo(lastP.x, lastP.y);
+    // context.moveTo(lastMouseX, lastMouseY);
 
-    ctx.lineTo(xx, yy);
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = LINE_WIDTH;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.stroke();
+    context.lineTo(xx, yy);
+    context.strokeStyle = 'black';
+    context.lineWidth = LINE_WIDTH;
+    context.lineJoin = 'round';
+    context.lineCap = 'round';
+    context.stroke();
 
     cleanIfFull();
   };
@@ -155,7 +173,7 @@ function PatternCanvas(props) {
     if (!isPatternFull()) return;
 
     drawPatternDots();
-    drawCurrentPath();
+    drawPath(currentPath);
   };
 
   const getPoint = n => PATTERN_POINTS[`P${n}`];
@@ -167,7 +185,8 @@ function PatternCanvas(props) {
 
     remaingPoints.forEach(point => {
       if (isMouseAt(x, y, point)) {
-        currentPath.push(point);
+        setCurrentPath(state => [...state, point]);
+
         console.log(`mouse at ${point}`);
       }
     });
@@ -183,11 +202,19 @@ function PatternCanvas(props) {
   );
 }
 
+PatternCanvas.propTypes = { exists: PropTypes.bool };
+
+const mapStateToProps = state => ({
+  exists: patternAlreadyExists(state),
+  lastPattern: getLastPattern(state),
+  patternExists: patternExists(state),
+});
+
 export const mapDispatchToProps = {
   setLastPattern: lastPatternSet,
 };
 
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps,
 )(PatternCanvas);
