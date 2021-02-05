@@ -25,7 +25,9 @@ import { MAIN_KEY } from 'containers/LocalStorage/constants';
 export function App(props) {
   useEffect(() => {
     const patterns = window.localStorage.getItem(MAIN_KEY);
-    props.initLocalStorage(JSON.parse(patterns));
+    const history = patterns ? JSON.parse(patterns) : [];
+
+    props.initLocalStorage(history);
   }, []);
 
   return (
